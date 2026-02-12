@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="Excel Filter Pro - A powerful PWA for uploading, filtering, and exporting Excel data">
+    <meta name="keywords" content="Excel, filter, export, spreadsheet, data, PWA">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Excel Pro">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%236366f1' width='180' height='180' rx='40'/><text x='90' y='90' font-size='70' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>EP</text></svg>">
+    <meta name="mobile-web-app-capable" content="yes">
+    
     <title>Excel Filter Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%236366f1' width='100' height='100' rx='20'/><text x='50' y='50' font-size='50' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>EP</text></svg>">
     <link rel="stylesheet" href="style.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -191,5 +202,54 @@
     </div>
 
     <script src="script.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js', {
+                    scope: '/'
+                }).then((registration) => {
+                    console.log('Service Worker registered successfully:', registration);
+                    
+                    // Check for updates periodically
+                    setInterval(() => {
+                        registration.update();
+                    }, 60000); // Check every minute
+                }).catch((error) => {
+                    console.error('Service Worker registration failed:', error);
+                });
+
+                // Listen for controller change (new service worker activated)
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    console.log('New Service Worker activated');
+                    // Optionally show update notification
+                    const updateMsg = 'A new version is available! Refresh to update.';
+                    console.log(updateMsg);
+                });
+            });
+
+            // Handle install prompt
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                console.log('Install prompt ready');
+                // You can show an install button here
+                showInstallPrompt();
+            });
+
+            window.addEventListener('appinstalled', () => {
+                console.log('App installed successfully');
+                deferredPrompt = null;
+                showToast('App installed successfully!');
+            });
+
+            function showInstallPrompt() {
+                // Add install button visibility or show custom prompt
+                // This can be enhanced based on your UI
+            }
+        }
+    </script>
 </body>
 </html>
