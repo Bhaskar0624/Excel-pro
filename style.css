@@ -494,17 +494,6 @@ th {
     background: linear-gradient(135deg, #fafafa 0%, var(--primary-lighter) 100%);
 }
 
-td {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border-light);
-    color: var(--text-main);
-}
-
-tr:hover td {
-    background: var(--primary-lighter);
-    transition: var(--transition);
-}
-
 .empty-state {
     padding: 4rem;
     text-align: center;
@@ -605,4 +594,231 @@ tr:hover td {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary-hover);
+}
+
+/* Table Elements */
+td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-main);
+}
+
+tr:hover td {
+    background: var(--primary-lighter);
+    transition: var(--transition);
+}
+
+/* Column Sorting */
+th {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+th:hover {
+    opacity: 0.8;
+}
+
+.sort-indicator {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+th.sort-asc .sort-indicator::after {
+    content: '▲';
+    opacity: 1;
+    color: var(--primary);
+}
+
+th.sort-desc .sort-indicator::after {
+    content: '▼';
+    opacity: 1;
+    color: var(--primary);
+}
+
+/* Advanced Filters */
+.advanced-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    padding: 0;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+/* Column Statistics */
+.column-stats {
+    background: var(--primary-lighter);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+.column-stats label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.stats-detailed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+}
+
+.stat-name {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* Secondary Button */
+.secondary-btn {
+    background: var(--bg-body);
+    color: var(--text-main);
+    border: 1.5px solid var(--border);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+.secondary-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-lighter);
+}
+
+/* Export Buttons */
+.export-buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.export-buttons .secondary-btn {
+    flex: 1;
+    font-size: 0.85rem;
+    padding: 0.75rem;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    animation: fadeIn var(--transition);
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideIn var(--transition);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-main);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.modal-close:hover {
+    color: var(--text-main);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.shortcut-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.shortcut-item kbd {
+    background: var(--bg-body);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.5rem;
+    font-family: monospace;
+    font-size: 0.85rem;
+    display: inline-block;
+    margin-right: 0.25rem;
+}
+
+.shortcut-item span {
+    font-size: 0.9rem;
+    color: var(--text-muted);
 }

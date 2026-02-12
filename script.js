@@ -2,6 +2,7 @@
 let originalData = [];
 let filteredData = [];
 let columns = [];
+let sortConfig = { column: null, direction: 'asc' };
 
 // Theme Management
 const themeToggle = document.getElementById('theme-toggle');
@@ -63,6 +64,12 @@ const columnSelect = document.getElementById('column-select');
 const columnFilterValue = document.getElementById('column-filter-value');
 const resetBtn = document.getElementById('reset-filters');
 const downloadBtn = document.getElementById('download-btn');
+const regexToggle = document.getElementById('regex-toggle');
+const caseSensitiveToggle = document.getElementById('case-sensitive-toggle');
+const exportCsvBtn = document.getElementById('export-csv-btn');
+const exportJsonBtn = document.getElementById('export-json-btn');
+const shortcutsModal = document.getElementById('shortcuts-modal');
+const closeShortcutsBtn = document.getElementById('close-shortcuts');
 
 // --- Event Listeners ---
 
@@ -94,6 +101,47 @@ columnSelect.addEventListener('change', handleColumnSelectChange);
 columnFilterValue.addEventListener('input', applyFilters);
 resetBtn.addEventListener('click', resetFilters);
 downloadBtn.addEventListener('click', downloadExcel);
+regexToggle.addEventListener('change', applyFilters);
+caseSensitiveToggle.addEventListener('change', applyFilters);
+exportCsvBtn.addEventListener('click', exportCsv);
+exportJsonBtn.addEventListener('click', exportJson);
+
+// Keyboard Shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+        switch(e.key.toLowerCase()) {
+            case 'f':
+                e.preventDefault();
+                searchGlobal.focus();
+                break;
+            case 'e':
+                e.preventDefault();
+                if (e.shiftKey) {
+                    exportCsv();
+                } else {
+                    downloadExcel();
+                }
+                break;
+            case 'r':
+                e.preventDefault();
+                resetFilters();
+                break;
+            case 'k':
+                e.preventDefault();
+                toggleShortcutsModal();
+                break;
+            case 'd':
+                e.preventDefault();
+                themeToggle.click();
+                break;
+        }
+    }
+});
+
+closeShortcutsBtn.addEventListener('click', toggleShortcutsModal);
+shortcutsModal.addEventListener('click', (e) => {
+    if (e.target === shortcutsModal) toggleShortcutsModal();
+});
 
 // --- Functions ---
 
@@ -182,10 +230,12 @@ function handleColumnSelectChange() {
     if (columnSelect.value) {
         columnFilterValue.disabled = false;
         columnFilterValue.placeholder = `Filter by ${columnSelect.value}...`;
+        updateColumnStatistics(columnSelect.value);
     } else {
         columnFilterValue.disabled = true;
         columnFilterValue.value = "";
         columnFilterValue.placeholder = "Value...";
+        document.getElementById('column-stats').style.display = 'none';
         applyFilters(); // Clear the specific column filter immediately
     }
 }
@@ -254,7 +304,33 @@ function renderTable() {
     const trHead = document.createElement('tr');
     columns.forEach(col => {
         const th = document.createElement('th');
-        th.textContent = col;
+        
+        // Add sort indicator
+        let sortClass = '';
+        if (sortConfig.column === col) {
+            sortClass = sortConfig.direction === 'asc' ? 'sort-asc' : 'sort-desc';
+        }
+        th.className = sortClass;
+        
+        // Create header content with sort indicator
+        const headerContent = document.createElement('div');
+        headerContent.style.display = 'flex';
+        headerContent.style.alignItems = 'center';
+        
+        const text = document.createTextNode(col);
+        headerContent.appendChild(text);
+        
+        const indicator = document.createElement('span');
+        indicator.className = 'sort-indicator';
+        headerContent.appendChild(indicator);
+        
+        th.appendChild(headerContent);
+        th.addEventListener('click', () => sortColumn(col));
+        th.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            updateColumnStatistics(col);
+        });
+        
         trHead.appendChild(th);
     });
     tableHead.appendChild(trHead);
@@ -321,4 +397,184 @@ function showToast(message, type = "success") {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+// Column Sorting
+function sortColumn(columnName) {
+    if (sortConfig.column === columnName) {
+        sortConfig.direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortConfig.column = columnName;
+        sortConfig.direction = 'asc';
+    }
+
+    filteredData.sort((a, b) => {
+        const aVal = String(a[columnName] || '').toLowerCase();
+        const bVal = String(b[columnName] || '').toLowerCase();
+
+        // Try numeric comparison first
+        const aNum = parseFloat(aVal);
+        const bNum = parseFloat(bVal);
+        
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+        }
+
+        return sortConfig.direction === 'asc' 
+            ? aVal.localeCompare(bVal) 
+            : bVal.localeCompare(aVal);
+    });
+
+    renderTable();
+}
+
+// Advanced Filtering
+function applyFilters() {
+    const globalTerm = searchGlobal.value.toLowerCase();
+    const emailTerm = emailFilter.value.toLowerCase();
+    const specificColTerm = columnFilterValue.value.toLowerCase();
+    const specificCol = columnSelect.value;
+    const useRegex = regexToggle.checked;
+    const caseSensitive = caseSensitiveToggle.checked;
+
+    filteredData = originalData.filter(row => {
+        // Global Search with regex support
+        let matchesGlobal = true;
+        if (globalTerm) {
+            try {
+                const flags = caseSensitive ? 'g' : 'gi';
+                const regex = new RegExp(useRegex ? globalTerm : globalTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
+                const values = Object.values(row).join(" ");
+                matchesGlobal = regex.test(values);
+            } catch (e) {
+                matchesGlobal = Object.values(row).join(" ").toLowerCase().includes(globalTerm);
+            }
+        }
+        
+        // Email Filter
+        let matchesEmail = true;
+        if (emailTerm) {
+            matchesEmail = Object.values(row).some(val => 
+                String(val).toLowerCase().includes(emailTerm)
+            );
+        }
+
+        // Specific Column Filter
+        let matchesSpecific = true;
+        if (specificCol && specificColTerm) {
+            const cellValue = String(row[specificCol]).toLowerCase();
+            matchesSpecific = cellValue.includes(specificColTerm);
+        }
+
+        return matchesGlobal && matchesEmail && matchesSpecific;
+    });
+
+    renderTable();
+    updateStats();
+}
+
+// CSV Export
+function exportCsv() {
+    if (filteredData.length === 0) {
+        showToast("No data to export.", "error");
+        return;
+    }
+
+    const headers = columns.join(',');
+    const rows = filteredData.map(row =>
+        columns.map(col => {
+            const value = row[col] || '';
+            const stringValue = String(value);
+            // Escape quotes and wrap in quotes if contains comma or newline
+            return stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')
+                ? `"${stringValue.replace(/"/g, '""')}"` 
+                : stringValue;
+        }).join(',')
+    );
+
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const date = new Date().toISOString().slice(0, 10);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Filtered_Data_${date}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast("CSV exported successfully!");
+}
+
+// JSON Export
+function exportJson() {
+    if (filteredData.length === 0) {
+        showToast("No data to export.", "error");
+        return;
+    }
+
+    const json = JSON.stringify(filteredData, null, 2);
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const date = new Date().toISOString().slice(0, 10);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Filtered_Data_${date}.json`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast("JSON exported successfully!");
+}
+
+// Column Statistics
+function updateColumnStatistics(columnName) {
+    const columnData = originalData
+        .map(row => row[columnName])
+        .filter(val => val !== null && val !== undefined && val !== '');
+
+    if (columnData.length === 0) {
+        document.getElementById('column-stats').style.display = 'none';
+        return;
+    }
+
+    // Determine type
+    const isNumeric = columnData.every(val => !isNaN(parseFloat(val)));
+    const type = isNumeric ? 'Number' : 'Text';
+
+    let stats = {
+        type: type,
+        unique: new Set(columnData).size,
+        min: '-',
+        max: '-',
+        avg: '-'
+    };
+
+    if (isNumeric) {
+        const nums = columnData.map(v => parseFloat(v));
+        stats.min = Math.min(...nums).toFixed(2);
+        stats.max = Math.max(...nums).toFixed(2);
+        stats.avg = (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(2);
+    } else {
+        stats.min = Math.min(...columnData.map(v => String(v).length));
+        stats.max = Math.max(...columnData.map(v => String(v).length));
+    }
+
+    document.getElementById('stat-type').textContent = stats.type;
+    document.getElementById('stat-min').textContent = stats.min;
+    document.getElementById('stat-max').textContent = stats.max;
+    document.getElementById('stat-avg').textContent = stats.avg;
+    document.getElementById('stat-unique').textContent = stats.unique;
+    document.getElementById('column-stats').style.display = 'block';
+}
+
+// Keyboard Shortcuts Modal
+function toggleShortcutsModal() {
+    shortcutsModal.classList.toggle('show');
 }

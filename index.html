@@ -74,6 +74,29 @@
                     <input type="text" id="column-filter-value" placeholder="Value..." disabled>
                 </div>
 
+                <div class="filter-group">
+                    <label for="advanced-filter">Advanced Filters</label>
+                    <div class="advanced-filters">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="regex-toggle"> Use Regex
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="case-sensitive-toggle"> Case Sensitive
+                        </label>
+                    </div>
+                </div>
+
+                <div id="column-stats" class="column-stats" style="display: none;">
+                    <label>Column Statistics</label>
+                    <div class="stats-detailed">
+                        <div class="stat-row"><span class="stat-name">Type:</span> <span id="stat-type">-</span></div>
+                        <div class="stat-row"><span class="stat-name">Min:</span> <span id="stat-min">-</span></div>
+                        <div class="stat-row"><span class="stat-name">Max:</span> <span id="stat-max">-</span></div>
+                        <div class="stat-row"><span class="stat-name">Avg:</span> <span id="stat-avg">-</span></div>
+                        <div class="stat-row"><span class="stat-name">Unique:</span> <span id="stat-unique">-</span></div>
+                    </div>
+                </div>
+
                 <div class="stats-card">
                     <div class="stat-item">
                         <span class="stat-label">Total Rows</span>
@@ -88,6 +111,15 @@
                 <button id="download-btn" class="primary-btn">
                     <i class="ph ph-download-simple"></i> Download Configured Data
                 </button>
+
+                <div class="export-buttons">
+                    <button id="export-csv-btn" class="secondary-btn" title="Export as CSV">
+                        <i class="ph ph-file-csv"></i> CSV
+                    </button>
+                    <button id="export-json-btn" class="secondary-btn" title="Export as JSON">
+                        <i class="ph ph-file-json"></i> JSON
+                    </button>
+                </div>
             </aside>
 
             <!-- Data Preview -->
@@ -119,6 +151,44 @@
 
     <!-- Toast Notification Container -->
     <div id="toast-container"></div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcuts-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="ph ph-keyboard"></i> Keyboard Shortcuts</h2>
+                <button class="modal-close" id="close-shortcuts">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="shortcuts-grid">
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>F</kbd>
+                        <span>Focus Global Search</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>E</kbd>
+                        <span>Export Excel</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>
+                        <span>Export CSV</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>R</kbd>
+                        <span>Reset Filters</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>K</kbd>
+                        <span>Show/Hide Shortcuts</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>D</kbd>
+                        <span>Toggle Dark Mode</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
