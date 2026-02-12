@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Filter Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS Library -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- Phosphor Icons for modern icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="ph ph-file-xls"></i>
+                <h1>Excel Filter Pro</h1>
+            </div>
+            <p class="subtitle">Upload, Filter, and Export your data in seconds.</p>
+        </header>
+
+        <!-- Upload Section -->
+        <section class="upload-section" id="drop-area">
+            <div class="upload-box">
+                <i class="ph ph-cloud-arrow-up upload-icon"></i>
+                <h3>Drag & Drop your Excel file here</h3>
+                <p>or</p>
+                <label for="file-input" class="upload-btn">Browse Files</label>
+                <input type="file" id="file-input" accept=".xlsx, .xls, .csv" hidden>
+                <p class="file-info" id="file-name"></p>
+            </div>
+        </section>
+
+        <!-- Main Workspace (Hidden initially) -->
+        <main class="workspace" id="workspace" style="display: none;">
+            
+            <!-- Sidebar / Filter Panel -->
+            <aside class="filter-panel">
+                <div class="panel-header">
+                    <h2><i class="ph ph-faders"></i> Filters</h2>
+                    <button id="reset-filters" class="text-btn">Reset</button>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="search-global">Global Search</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="search-global" placeholder="Search anything...">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="email-filter">Filter by Email</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-envelope"></i>
+                        <input type="text" id="email-filter" placeholder="e.g. @gmail.com">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="column-select">Column Specific</label>
+                    <select id="column-select">
+                        <option value="">Select Column...</option>
+                    </select>
+                    <input type="text" id="column-filter-value" placeholder="Value..." disabled>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Rows</span>
+                        <span class="stat-value" id="total-rows">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Filtered</span>
+                        <span class="stat-value" id="filtered-rows">0</span>
+                    </div>
+                </div>
+
+                <button id="download-btn" class="primary-btn">
+                    <i class="ph ph-download-simple"></i> Download Configured Data
+                </button>
+            </aside>
+
+            <!-- Data Preview -->
+            <section class="data-preview">
+                <div class="preview-header">
+                    <h2>Data Preview</h2>
+                    <div class="view-controls">
+                        <!-- Future: Pagination controls could go here -->
+                        <span id="showing-info">Showing all results</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="data-table">
+                        <thead>
+                            <!-- Headers generated dynamically -->
+                        </thead>
+                        <tbody>
+                            <!-- Rows generated dynamically -->
+                        </tbody>
+                    </table>
+                    <div id="empty-state" class="empty-state" style="display: none;">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <p>No matching records found.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
