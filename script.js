@@ -3,6 +3,48 @@ let originalData = [];
 let filteredData = [];
 let columns = [];
 
+// Theme Management
+const themeToggle = document.getElementById('theme-toggle');
+const htmlElement = document.documentElement;
+
+// Initialize theme from localStorage or system preference
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme) {
+        htmlElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    } else if (prefersDark) {
+        htmlElement.setAttribute('data-theme', 'dark');
+        updateThemeIcon('dark');
+    }
+}
+
+function updateThemeIcon(theme) {
+    if (theme === 'dark') {
+        themeToggle.innerHTML = '<i class="ph ph-sun"></i>';
+        themeToggle.title = 'Switch to light mode';
+    } else {
+        themeToggle.innerHTML = '<i class="ph ph-moon"></i>';
+        themeToggle.title = 'Switch to dark mode';
+    }
+}
+
+themeToggle.addEventListener('click', () => {
+    const currentTheme = htmlElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    htmlElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+    
+    showToast(`Switched to ${newTheme} mode`);
+});
+
+// Initialize theme on page load
+initializeTheme();
+
 // DOM Elements
 const dropArea = document.getElementById('drop-area');
 const fileInput = document.getElementById('file-input');
