@@ -399,6 +399,97 @@ function showToast(message, type = "success") {
     }, 3000);
 }
 
+/* PWA Install Prompt (mobile) */
+let deferredPrompt = null;
+const INSTALL_SHOWN_KEY = 'pwaInstallPromptShown';
+
+function isMobile() {
+    return /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function isIos() {
+    const ua = navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(ua) && !window.MSStream;
+}
+
+const installModal = document.getElementById('install-modal');
+const installConfirmBtn = document.getElementById('install-confirm-btn');
+const installLaterBtn = document.getElementById('install-later-btn');
+const installCancelBtn = document.getElementById('install-cancel-btn');
+
+function showInstallModal() {
+    if (!installModal) return;
+    if (!isMobile()) return;
+    if (localStorage.getItem(INSTALL_SHOWN_KEY)) return;
+    localStorage.setItem(INSTALL_SHOWN_KEY, '1');
+
+    const iosEl = installModal.querySelector('.ios-instructions');
+    const andEl = installModal.querySelector('.android-instructions');
+
+    if (isIos()) {
+        if (iosEl) iosEl.style.display = 'block';
+        if (andEl) andEl.style.display = 'none';
+    } else {
+        if (iosEl) iosEl.style.display = 'none';
+        if (andEl) andEl.style.display = 'block';
+    }
+
+    installModal.classList.add('show');
+    installModal.style.display = 'flex';
+    installModal.setAttribute('aria-hidden', 'false');
+}
+
+function hideInstallModal() {
+    if (!installModal) return;
+    installModal.classList.remove('show');
+    installModal.style.display = 'none';
+    installModal.setAttribute('aria-hidden', 'true');
+}
+
+// Handle native install prompt for supported browsers (Chrome/Android)
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (isMobile()) showInstallModal();
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    showToast('App installed successfully!');
+    localStorage.setItem('pwaInstalled', '1');
+    hideInstallModal();
+});
+
+// Buttons
+if (installConfirmBtn) {
+    installConfirmBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const choice = await deferredPrompt.userChoice;
+            if (choice && choice.outcome === 'accepted') {
+                showToast('Thanks for installing!');
+            } else {
+                showToast('Install dismissed');
+            }
+            deferredPrompt = null;
+            hideInstallModal();
+        } else if (isIos()) {
+            showToast('Tap Share → Add to Home Screen in Safari');
+        } else {
+            showToast('Install not available');
+            hideInstallModal();
+        }
+    });
+}
+
+if (installLaterBtn) installLaterBtn.addEventListener('click', hideInstallModal);
+if (installCancelBtn) installCancelBtn.addEventListener('click', hideInstallModal);
+
+// Show iOS install hint on initial mobile visits (if not shown already)
+if (isIos() && isMobile() && !localStorage.getItem(INSTALL_SHOWN_KEY)) {
+    setTimeout(showInstallModal, 1200);
+}
+
 // Column Sorting
 function sortColumn(columnName) {
     if (sortConfig.column === columnName) {
