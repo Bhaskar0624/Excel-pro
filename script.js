@@ -3,6 +3,14 @@ let originalData = [];
 let filteredData = [];
 let columns = [];
 let sortConfig = { column: null, direction: 'asc' };
+let hiddenColumns = new Set();
+let savedFilters = [];
+let currentPage = 1;
+let rowsPerPage = 100;
+let dataValidation = {
+    invalidEmails: new Set(),
+    duplicateRows: new Set()
+};
 
 // Theme Management
 const themeToggle = document.getElementById('theme-toggle');
@@ -71,6 +79,33 @@ const exportJsonBtn = document.getElementById('export-json-btn');
 const shortcutsModal = document.getElementById('shortcuts-modal');
 const closeShortcutsBtn = document.getElementById('close-shortcuts');
 
+// New feature elements
+const dateRangePreset = document.getElementById('date-range-preset');
+const customDateRange = document.getElementById('custom-date-range');
+const dateFrom = document.getElementById('date-from');
+const dateTo = document.getElementById('date-to');
+const numericColumnSelect = document.getElementById('numeric-column-select');
+const numericRangeInputs = document.getElementById('numeric-range-inputs');
+const numericMin = document.getElementById('numeric-min');
+const numericMax = document.getElementById('numeric-max');
+
+// Modals
+const columnVisibilityBtn = document.getElementById('column-visibility-btn');
+const columnVisibilityModal = document.getElementById('column-visibility-modal');
+const closeColumnVisibility = document.getElementById('close-column-visibility');
+const dataToolsBtn = document.getElementById('data-tools-btn');
+const dataToolsModal = document.getElementById('data-tools-modal');
+const closeDataTools = document.getElementById('close-data-tools');
+const visualizeBtn = document.getElementById('visualize-btn');
+const visualizationModal = document.getElementById('visualization-modal');
+const closeVisualization = document.getElementById('close-visualization');
+const findReplaceModal = document.getElementById('find-replace-modal');
+const closeFindReplace = document.getElementById('close-find-replace');
+
+// Filter actions
+const saveFilterBtn = document.getElementById('save-filter-btn');
+const loadFilterBtn = document.getElementById('load-filter-btn');
+
 // --- Event Listeners ---
 
 // Drag & Drop
@@ -106,6 +141,53 @@ caseSensitiveToggle.addEventListener('change', applyFilters);
 exportCsvBtn.addEventListener('click', exportCsv);
 exportJsonBtn.addEventListener('click', exportJson);
 
+// New filter listeners
+if (dateRangePreset) {
+    dateRangePreset.addEventListener('change', handleDateRangeChange);
+}
+if (dateFrom) dateFrom.addEventListener('change', applyFilters);
+if (dateTo) dateTo.addEventListener('change', applyFilters);
+if (numericColumnSelect) {
+    numericColumnSelect.addEventListener('change', handleNumericColumnChange);
+}
+if (numericMin) numericMin.addEventListener('input', applyFilters);
+if (numericMax) numericMax.addEventListener('input', applyFilters);
+
+// Modal controls
+if (columnVisibilityBtn) columnVisibilityBtn.addEventListener('click', () => toggleModal(columnVisibilityModal));
+if (closeColumnVisibility) closeColumnVisibility.addEventListener('click', () => toggleModal(columnVisibilityModal));
+if (dataToolsBtn) dataToolsBtn.addEventListener('click', () => toggleModal(dataToolsModal));
+if (closeDataTools) closeDataTools.addEventListener('click', () => toggleModal(dataToolsModal));
+if (visualizeBtn) visualizeBtn.addEventListener('click', () => toggleModal(visualizationModal));
+if (closeVisualization) closeVisualization.addEventListener('click', () => toggleModal(visualizationModal));
+if (closeFindReplace) closeFindReplace.addEventListener('click', () => toggleModal(findReplaceModal));
+
+// Data tools
+document.getElementById('remove-duplicates-btn')?.addEventListener('click', removeDuplicates);
+document.getElementById('remove-empty-rows-btn')?.addEventListener('click', removeEmptyRows);
+document.getElementById('trim-whitespace-btn')?.addEventListener('click', trimWhitespace);
+document.getElementById('validate-emails-btn')?.addEventListener('click', validateEmails);
+document.getElementById('uppercase-btn')?.addEventListener('click', () => transformCase('upper'));
+document.getElementById('lowercase-btn')?.addEventListener('click', () => transformCase('lower'));
+document.getElementById('find-replace-btn')?.addEventListener('click', openFindReplace);
+document.getElementById('copy-clipboard-btn')?.addEventListener('click', copyToClipboard);
+
+// Find & Replace
+document.getElementById('fr-replace-btn')?.addEventListener('click', performFindReplace);
+document.getElementById('fr-preview-btn')?.addEventListener('click', previewFindReplace);
+
+// Visualization
+document.getElementById('generate-chart-btn')?.addEventListener('click', generateChart);
+document.getElementById('export-chart-btn')?.addEventListener('click', exportChart);
+
+// Column visibility
+document.getElementById('show-all-columns')?.addEventListener('click', () => toggleAllColumns(true));
+document.getElementById('hide-all-columns')?.addEventListener('click', () => toggleAllColumns(false));
+
+// Filter save/load
+if (saveFilterBtn) saveFilterBtn.addEventListener('click', saveCurrentFilters);
+if (loadFilterBtn) loadFilterBtn.addEventListener('click', loadSavedFilters);
+
 // Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey) {
@@ -133,6 +215,16 @@ document.addEventListener('keydown', (e) => {
             case 'd':
                 e.preventDefault();
                 themeToggle.click();
+                break;
+            case 'h':
+                e.preventDefault();
+                openFindReplace();
+                break;
+            case 'c':
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    copyToClipboard();
+                }
                 break;
         }
     }
@@ -212,6 +304,10 @@ function processData(rawData) {
     filteredData = [...originalData];
 
     populateColumnSelect(headers);
+    if (window.advancedFeatures) {
+        window.advancedFeatures.populateNumericColumns();
+        window.advancedFeatures.setupVisualization();
+    }
     renderTable();
     updateStats();
 }
@@ -240,42 +336,6 @@ function handleColumnSelectChange() {
     }
 }
 
-function applyFilters() {
-    const globalTerm = searchGlobal.value.toLowerCase();
-    const emailTerm = emailFilter.value.toLowerCase();
-    const specificColTerm = columnFilterValue.value.toLowerCase();
-    const specificCol = columnSelect.value;
-
-    filteredData = originalData.filter(row => {
-        // Global Search
-        const values = Object.values(row).join(" ").toLowerCase();
-        const matchesGlobal = values.includes(globalTerm);
-        
-        // Email Filter
-        // Heuristic: Check all columns that look like email OR specifically check columns named 'email'
-        // Ideally we check all values for now since user wants "filter by email" explicitly
-        let matchesEmail = true;
-        if (emailTerm) {
-            // Find if any value in the row contains the email term AND looks like an email part
-            // Or just simple contains for now
-            matchesEmail = Object.values(row).some(val => 
-                String(val).toLowerCase().includes(emailTerm)
-            );
-        }
-
-        // Specific Column Filter
-        let matchesSpecific = true;
-        if (specificCol && specificColTerm) {
-            const cellValue = String(row[specificCol]).toLowerCase();
-            matchesSpecific = cellValue.includes(specificColTerm);
-        }
-
-        return matchesGlobal && matchesEmail && matchesSpecific;
-    });
-
-    renderTable();
-    updateStats();
-}
 
 function resetFilters() {
     searchGlobal.value = "";
@@ -300,9 +360,12 @@ function renderTable() {
         emptyState.style.display = 'none';
     }
 
+    // Get visible columns
+    const visibleColumns = columns.filter(col => !hiddenColumns.has(col));
+
     // Headers
     const trHead = document.createElement('tr');
-    columns.forEach(col => {
+    visibleColumns.forEach(col => {
         const th = document.createElement('th');
         
         // Add sort indicator
@@ -336,12 +399,18 @@ function renderTable() {
     tableHead.appendChild(trHead);
 
     // Body (Limit to first 100 to avoid freezing DOM on massive files)
-    const RENDER_LIMIT = 100;
+    const RENDER_LIMIT = rowsPerPage;
     const subset = filteredData.slice(0, RENDER_LIMIT);
 
-    subset.forEach(row => {
+    subset.forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
-        columns.forEach(col => {
+        
+        // Highlight invalid emails
+        if (dataValidation.invalidEmails.has(rowIndex)) {
+            tr.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+        }
+        
+        visibleColumns.forEach(col => {
             const td = document.createElement('td');
             td.textContent = row[col];
             tr.appendChild(td);
@@ -352,7 +421,7 @@ function renderTable() {
     if (filteredData.length > RENDER_LIMIT) {
         const infoRow = document.createElement('tr');
         const infoTd = document.createElement('td');
-        infoTd.colSpan = columns.length;
+        infoTd.colSpan = visibleColumns.length;
         infoTd.style.textAlign = 'center';
         infoTd.style.color = '#6b7280';
         infoTd.textContent = `... and ${filteredData.length - RENDER_LIMIT} more rows. Download to see all.`;

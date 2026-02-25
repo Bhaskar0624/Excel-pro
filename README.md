@@ -4,16 +4,48 @@ A modern, responsive web application for uploading, filtering, and exporting Exc
 
 ## 🎯 Features
 
+### Core Functionality
 - **Drag & Drop Upload**: Easily upload Excel (.xlsx, .xls) or CSV files by dragging them into the designated area
 - **Global Search**: Search across all columns simultaneously for quick data discovery
 - **Email Filtering**: Filter records by email addresses or email patterns
 - **Column-Specific Filtering**: Filter data by selecting a specific column and entering a value
 - **Live Statistics**: Real-time display of total rows and filtered rows
 - **Data Preview**: Clean, responsive table view with hover effects and smooth scrolling
-- **Export Functionality**: Download filtered data as Excel files with timestamps
-- **Modern UI**: Beautiful gradient backgrounds, smooth animations, and professional design
+- **Export Functionality**: Download filtered data as Excel, CSV, or JSON files with timestamps
+
+### Advanced Filtering
+- **Date Range Filters**: Filter by preset ranges (today, last 7 days, this month) or custom date ranges
+- **Numeric Range Filters**: Filter numeric columns by min/max values
+- **Regex Support**: Use regular expressions for powerful pattern matching
+- **Case Sensitive Search**: Toggle case sensitivity for precise filtering
+- **Filter Presets**: Save and load your favorite filter configurations
+
+### Data Cleaning & Transformation
+- **Remove Duplicates**: Automatically detect and remove duplicate rows
+- **Remove Empty Rows**: Clean up your dataset by removing rows with no data
+- **Trim Whitespace**: Remove leading and trailing spaces from all cells
+- **Email Validation**: Identify and highlight invalid email addresses
+- **Case Transformation**: Convert text to UPPERCASE or lowercase
+- **Find & Replace**: Bulk find and replace across columns with preview
+
+### Data Visualization
+- **Bar Charts**: Visualize value distribution across your data
+- **Pie Charts**: See proportional breakdowns with interactive legends
+- **Line Charts**: Track trends and patterns
+- **Histograms**: Analyze numeric data distribution
+
+### Column Management
+- **Column Visibility**: Show/hide specific columns for focused analysis
+- **Column Sorting**: Click headers to sort ascending/descending
+- **Column Statistics**: Right-click headers for detailed stats (min, max, avg, unique values)
+
+### User Experience
+- **Dark Mode**: Toggle between light and dark themes
+- **Keyboard Shortcuts**: Fast navigation and actions
+- **Copy to Clipboard**: Quickly copy filtered data
+- **Toast Notifications**: Clear feedback for all actions
 - **Responsive Design**: Fully optimized for desktop and mobile devices
-- **Notifications**: Toast notifications for user actions and feedback
+- **PWA Support**: Install as a standalone app on any device
 
 ## 🚀 Getting Started
 
@@ -158,11 +190,16 @@ All dependencies are loaded from CDN, so no installation is required.
 2. **Filtering**: Faster filtering on columns with fewer unique values
 3. **Export**: Downloaded files are compressed for optimal file size
 
-## 📝 Keyboard Shortcuts
+## ⌨️ Keyboard Shortcuts
 
-- **Tab**: Navigate through filter fields
-- **Enter**: Apply filter when in text fields
-- **Escape**: Clear focus
+- **Ctrl/Cmd + F**: Focus global search
+- **Ctrl/Cmd + E**: Export to Excel
+- **Ctrl/Cmd + Shift + E**: Export to CSV
+- **Ctrl/Cmd + R**: Reset all filters
+- **Ctrl/Cmd + K**: Show/hide keyboard shortcuts
+- **Ctrl/Cmd + D**: Toggle dark mode
+- **Ctrl/Cmd + H**: Open find & replace
+- **Ctrl/Cmd + Shift + C**: Copy filtered data to clipboard
 
 ## 🐛 Known Limitations
 
@@ -172,12 +209,14 @@ All dependencies are loaded from CDN, so no installation is required.
 
 ## 🎓 Future Enhancements
 
-- Multi-sheet support
-- Advanced filtering (regex, date ranges)
-- Column sorting
-- Data visualization charts
-- Undo/Redo functionality
-- Custom export formats
+- Multi-sheet support with sheet selector
+- PDF export with custom formatting
+- Advanced chart export (PNG, SVG)
+- Collaborative filtering with shareable URLs
+- Custom formula builder
+- Batch file processing
+- Cloud storage integration
+- Real-time collaboration features
 
 ## 📧 Support
 
@@ -199,8 +238,8 @@ This project is open source and available for personal and commercial use.
 
 ---
 
-**Version**: 2.0  
+**Version**: 3.0  
 **Last Updated**: February 2026  
 **Status**: Production Ready ✅
 
-Enjoy filtering your data efficiently! 🚀
+Enjoy filtering your data efficiently with powerful new features! 🚀

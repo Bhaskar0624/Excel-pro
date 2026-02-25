@@ -97,6 +97,35 @@
                     </div>
                 </div>
 
+                <div class="filter-group">
+                    <label for="date-range-filter">Date Range</label>
+                    <select id="date-range-preset">
+                        <option value="">Select preset...</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="last7days">Last 7 Days</option>
+                        <option value="last30days">Last 30 Days</option>
+                        <option value="thisMonth">This Month</option>
+                        <option value="lastMonth">Last Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <div id="custom-date-range" style="display: none; margin-top: 0.5rem;">
+                        <input type="date" id="date-from" placeholder="From">
+                        <input type="date" id="date-to" placeholder="To" style="margin-top: 0.5rem;">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="numeric-range">Numeric Range</label>
+                    <select id="numeric-column-select">
+                        <option value="">Select numeric column...</option>
+                    </select>
+                    <div id="numeric-range-inputs" style="display: none; margin-top: 0.5rem;">
+                        <input type="number" id="numeric-min" placeholder="Min value">
+                        <input type="number" id="numeric-max" placeholder="Max value" style="margin-top: 0.5rem;">
+                    </div>
+                </div>
+
                 <div id="column-stats" class="column-stats" style="display: none;">
                     <label>Column Statistics</label>
                     <div class="stats-detailed">
@@ -119,6 +148,15 @@
                     </div>
                 </div>
 
+                <div class="filter-actions">
+                    <button id="save-filter-btn" class="secondary-btn" title="Save current filters">
+                        <i class="ph ph-floppy-disk"></i> Save Filters
+                    </button>
+                    <button id="load-filter-btn" class="secondary-btn" title="Load saved filters">
+                        <i class="ph ph-folder-open"></i> Load Filters
+                    </button>
+                </div>
+
                 <button id="download-btn" class="primary-btn">
                     <i class="ph ph-download-simple"></i> Download Configured Data
                 </button>
@@ -138,7 +176,15 @@
                 <div class="preview-header">
                     <h2>Data Preview</h2>
                     <div class="view-controls">
-                        <!-- Future: Pagination controls could go here -->
+                        <button id="column-visibility-btn" class="icon-btn" title="Show/Hide Columns">
+                            <i class="ph ph-columns"></i>
+                        </button>
+                        <button id="data-tools-btn" class="icon-btn" title="Data Tools">
+                            <i class="ph ph-wrench"></i>
+                        </button>
+                        <button id="visualize-btn" class="icon-btn" title="Visualize Data">
+                            <i class="ph ph-chart-bar"></i>
+                        </button>
                         <span id="showing-info">Showing all results</span>
                     </div>
                 </div>
@@ -196,7 +242,145 @@
                         <kbd>Ctrl</kbd> + <kbd>D</kbd>
                         <span>Toggle Dark Mode</span>
                     </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>H</kbd>
+                        <span>Find & Replace</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>
+                        <span>Copy to Clipboard</span>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column Visibility Modal -->
+    <div id="column-visibility-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="ph ph-columns"></i> Column Visibility</h2>
+                <button class="modal-close" id="close-column-visibility">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="column-visibility-list" class="column-visibility-list"></div>
+                <div class="modal-actions">
+                    <button id="show-all-columns" class="secondary-btn">Show All</button>
+                    <button id="hide-all-columns" class="secondary-btn">Hide All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Tools Modal -->
+    <div id="data-tools-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="ph ph-wrench"></i> Data Tools</h2>
+                <button class="modal-close" id="close-data-tools">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tools-grid">
+                    <button class="tool-btn" id="remove-duplicates-btn">
+                        <i class="ph ph-copy"></i>
+                        <span>Remove Duplicates</span>
+                    </button>
+                    <button class="tool-btn" id="remove-empty-rows-btn">
+                        <i class="ph ph-trash"></i>
+                        <span>Remove Empty Rows</span>
+                    </button>
+                    <button class="tool-btn" id="trim-whitespace-btn">
+                        <i class="ph ph-scissors"></i>
+                        <span>Trim Whitespace</span>
+                    </button>
+                    <button class="tool-btn" id="validate-emails-btn">
+                        <i class="ph ph-envelope-simple"></i>
+                        <span>Validate Emails</span>
+                    </button>
+                    <button class="tool-btn" id="uppercase-btn">
+                        <i class="ph ph-text-aa"></i>
+                        <span>UPPERCASE</span>
+                    </button>
+                    <button class="tool-btn" id="lowercase-btn">
+                        <i class="ph ph-text-aa"></i>
+                        <span>lowercase</span>
+                    </button>
+                    <button class="tool-btn" id="find-replace-btn">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <span>Find & Replace</span>
+                    </button>
+                    <button class="tool-btn" id="copy-clipboard-btn">
+                        <i class="ph ph-clipboard"></i>
+                        <span>Copy to Clipboard</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Find & Replace Modal -->
+    <div id="find-replace-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="ph ph-magnifying-glass"></i> Find & Replace</h2>
+                <button class="modal-close" id="close-find-replace">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="filter-group">
+                    <label>Column</label>
+                    <select id="fr-column-select">
+                        <option value="all">All Columns</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Find</label>
+                    <input type="text" id="fr-find" placeholder="Text to find...">
+                </div>
+                <div class="filter-group">
+                    <label>Replace with</label>
+                    <input type="text" id="fr-replace" placeholder="Replacement text...">
+                </div>
+                <div class="advanced-filters">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="fr-case-sensitive"> Case Sensitive
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="fr-whole-word"> Whole Word Only
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button id="fr-preview-btn" class="secondary-btn">Preview</button>
+                    <button id="fr-replace-btn" class="primary-btn">Replace All</button>
+                </div>
+                <div id="fr-preview" class="fr-preview" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualization Modal -->
+    <div id="visualization-modal" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2><i class="ph ph-chart-bar"></i> Data Visualization</h2>
+                <button class="modal-close" id="close-visualization">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="viz-controls">
+                    <select id="viz-column-select">
+                        <option value="">Select column...</option>
+                    </select>
+                    <select id="viz-type-select">
+                        <option value="bar">Bar Chart</option>
+                        <option value="pie">Pie Chart</option>
+                        <option value="line">Line Chart</option>
+                        <option value="histogram">Histogram</option>
+                    </select>
+                    <button id="generate-chart-btn" class="primary-btn">Generate</button>
+                </div>
+                <div id="chart-container" class="chart-container"></div>
+                <button id="export-chart-btn" class="secondary-btn" style="display: none; margin-top: 1rem;">
+                    <i class="ph ph-download"></i> Export Chart
+                </button>
             </div>
         </div>
     </div>
@@ -230,6 +414,7 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="advanced-features.js"></script>
     
     <!-- PWA Service Worker Registration -->
     <script>
